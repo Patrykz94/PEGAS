@@ -36,6 +36,8 @@ GLOBAL systemEventFlag IS FALSE.
 GLOBAL userEventPointer IS -1.		//	As above
 GLOBAL userEventFlag IS FALSE.
 GLOBAL throttleSetting IS 1.
+GLOBAL rollRequired IS FALSE.
+GLOBAL rollAngle IS 0.
 GLOBAL steeringVector IS LOOKDIRUP(SHIP:FACING:FOREVECTOR, SHIP:FACING:TOPVECTOR).
 GLOBAL upfgConverged IS FALSE.
 GLOBAL stagingInProgress IS FALSE.
@@ -75,7 +77,7 @@ UNTIL ABORT {
 		//	The vehicle is going straight up for given amount of time
 		IF TIME:SECONDS >= liftoffTime:SECONDS + controls["verticalAscentTime"] {
 			//	Then it changes attitude for an initial pitchover "kick"
-			SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],90-controls["pitchOverAngle"]):VECTOR, SHIP:FACING:TOPVECTOR).
+			SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],90-controls["pitchOverAngle"]):VECTOR, getRollVector(rollAngle)).
 			SET ascentFlag TO 1.
 			pushUIMessage( "Pitching over by " + ROUND(controls["pitchOverAngle"],1) + " degrees." ).
 		}
@@ -101,14 +103,14 @@ UNTIL ABORT {
 		//	We cannot blindly hold prograde though, because this will provide no azimuth control
 		//	Much better option is to read current velocity angle and aim for that, but correct for azimuth
 		SET velocityAngle TO 90-VANG(SHIP:UP:VECTOR, SHIP:VELOCITY:SURFACE).
-		SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],velocityAngle):VECTOR, SHIP:FACING:TOPVECTOR).
+		SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],velocityAngle):VECTOR, getRollVector(rollAngle)).
 		//	There are two almost identical cases, in the first we set the initial message, in the next we just keep attitude.
 		pushUIMessage( "Holding prograde at " + ROUND(mission["launchAzimuth"],1) + " deg azimuth." ).
 		SET ascentFlag TO 3.
 	}
 	ELSE {
 		SET velocityAngle TO 90-VANG(SHIP:UP:VECTOR, SHIP:VELOCITY:SURFACE).
-		SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],velocityAngle):VECTOR, SHIP:FACING:TOPVECTOR).
+		SET steeringVector TO LOOKDIRUP(HEADING(mission["launchAzimuth"],velocityAngle):VECTOR, getRollVector(rollAngle)).
 	}
 	//	The passive guidance loop ends a few seconds before actual ignition of the first UPFG-controlled stage.
 	//	This is to give UPFG time to converge. Actual ignition occurs via stagingEvents.
@@ -132,6 +134,7 @@ SET upfgInternal TO setupUPFG().
 //	Main loop - iterate UPFG (respective function controls attitude directly)
 UNTIL ABORT {
 	//	Sequence handling
+
 	IF systemEventFlag = TRUE { systemEventHandler(). }
 	IF   userEventFlag = TRUE {   userEventHandler(). }
 	IF  stageEventFlag = TRUE {  stageEventHandler(). }

@@ -133,6 +133,20 @@ FUNCTION launchAzimuth {
 	RETURN 90-azimuth.	//	In MATLAB an azimuth of 0 is due east, while in KSP it's due north. This returned value is steering-ready.
 }.
 
+// Creating a vector from the roll angle provided
+FUNCTION getRollVector {
+	DECLARE PARAMETER rollAngle.		// Expects scalar
+
+	IF rollRequired {
+		LOCAL angle IS angleaxis(rollAngle, SHIP:FACING:FOREVECTOR).
+		LOCAL rollVector IS SHIP:UP:VECTOR * angle.
+
+		RETURN rollVector.
+	} ELSE {
+		RETURN SHIP:FACING:TOPVECTOR.
+	}
+}.
+
 //	Verifies parameters of the attained orbit
 FUNCTION missionValidation {
 	FUNCTION difference {
@@ -450,6 +464,7 @@ FUNCTION userEventHandler {
 	IF      eType = "print" OR eType = "p" { }
 	ELSE IF eType = "stage" OR eType = "s" { STAGE. }
 	ELSE IF eType = "throttle" OR eType = "t" { SET throttleSetting TO sequence[userEventPointer]["throttle"]. }
+	ELSE IF eType = "roll" OR eType = "r" { SET rollAngle TO sequence[userEventPointer]["angle"]. SET rollRequired TO TRUE. }
 	ELSE { pushUIMessage( "Unknown event type (" + eType + ", message='" + sequence[userEventPointer]["message"] + "')!", 5, PRIORITY_HIGH ). }
 	pushUIMessage( sequence[userEventPointer]["message"] ).
 	
@@ -645,7 +660,7 @@ FUNCTION upfgSteeringControl {
 	}
 	//	Check if we can steer
 	IF upfgConverged AND NOT stagingInProgress {
-		SET steeringVector TO vecYZ(upfgOutput[1]["vector"]).
+		SET steeringVector TO LOOKDIRUP(vecYZ(upfgOutput[1]["vector"]), getRollVector(rollAngle)).
 		SET usc_lastGoodVector TO upfgOutput[1]["vector"].
 	}
 	RETURN upfgOutput[0].
