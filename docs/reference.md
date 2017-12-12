@@ -193,3 +193,4 @@ Command        | Parameters            | Availability  | Description
 setUpfgTime    | `scalar` (optional)   | passive phase | Change time when the UPFG guidance phase should start. Useful if it can't be predicted before launch. If called without parameters, will default to now (`TIME:SECONDS`).
 engineShutdown | multiple `string`s    | passive phase | Shutdown engines specified by nametags. Multiple nametags and multiple engines with the same nametag allowed.
 setThrottle    | 2 `scalar`s           | passive phase | Change the throttle setting in flight. Parameters, in that order: desired throttle setting, minimum engine throttle, both as numbers between 0 and 1.
+setAzimuth     | `scalar`              | passive phase | Change heading of the rocket during the passive phase of the launch. Needs to be provided as compass heading. Useful if the rocket needs to adjust it's course to fly directly over a certain point on the ground.

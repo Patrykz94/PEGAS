@@ -199,8 +199,19 @@ FUNCTION command_setThrottle {
 	RETURN TRUE.
 }
 
+FUNCTION command_setAzimuth {
+	PARAMETER params IS LIST().	//	Requires desired azimuth
+	IF upfgStage >= 0 { RETURN "ERROR (Command not available in UPFG guidance mode)". }
+	IF params:LENGTH < 1 { RETURN "ERROR (Too few parameters)". }
+	IF NOT params[0]:ISTYPE("Scalar") { RETURN "ERROR (Incorrect parameter type)". }
+	IF params[0] >= 360 OR params[0] < 0 { RETURN "ERROR (Parameter value out of range)". }
+	SET mission["launchAzimuth"] TO params[0].
+	RETURN TRUE.
+}
+
 GLOBAL availableCommands IS LEXICON(
 	"setUpfgTime", command_setUpfgTime@,
 	"engineShutdown", command_engineShutdown@,
-	"setThrottle", command_setThrottle@
+	"setThrottle", command_setThrottle@,
+	"setAzimuth", command_setAzimuth@
 ).
