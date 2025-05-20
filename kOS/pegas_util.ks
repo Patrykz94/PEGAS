@@ -820,15 +820,15 @@ FUNCTION initializeVehicleForUPFG {
 	SET prestageHold TO TRUE.
 }
 
-//	Utility to keep track of actively guided stage burnouts
-FUNCTION updateStageEndTime {
-	//	The staging event calls this when a stage is activated, to calculate when the stage will run out of fuel.
-	//	This is useful, because we can use this value to estimate a true Tgo for that stage. Doubly so, as we can
-	//	easily calculate the total burn time for the entire physical stage. The value might be off by 1-2 seconds
-	//	because of the engine spool-up time (#wontfix).
+//	Utility to keep track of actively guided stage burnouts for display purposes
+FUNCTION updateThisStageEndTime {
+	//	The staging event calls this when a stage is activated, to calculate when the stage - and all of its
+	//	subsequent virtual continuations - will run out of fuel. This is only used to update "thisStageEndTime"
+	//	used by refreshUI. The value might be off by 1-2 seconds because of the engine spool-up time (#wontfix).
 	//	Expects global variables:
-	//	"vehicle" as list
+	//	"thisStageEndTime" as scalar
 	//	"upfgStage" as scalar
+	//	"vehicle" as list
 	LOCAL stageBurnTime IS 0.
 	//	Calculate the complete burn time including the subsequent virtual stages.
 	LOCAL i IS 0.
@@ -843,7 +843,7 @@ FUNCTION updateStageEndTime {
 		SET i TO i + 1.
 	}
 	//	Since this stage has been activated just now, this is when it will burn out:
-	SET stageEndTime TO TIME:SECONDS + stageBurnTime.
+	SET thisStageEndTime TO TIME:SECONDS + stageBurnTime.
 }
 
 //	THROTTLE AND STEERING CONTROLS

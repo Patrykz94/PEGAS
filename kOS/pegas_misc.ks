@@ -18,6 +18,7 @@ GLOBAL PRIORITY_CRITICAL IS 3.
 SET TERMINAL:WIDTH TO 43.
 SET TERMINAL:HEIGHT TO 45.		//	Few more lines for debugging
 //	Flight plan display
+GLOBAL thisStageEndTime IS TIME.
 GLOBAL lastEventHandled IS -2.	//	Flight plan is redrawn whenever a change in eventPointer is observed
 GLOBAL printMecoEvent IS FALSE.	//	In active guidance phase, this is how we'll know to update time on the MECO event placeholder
 GLOBAL printableEvents IS LIST().
@@ -152,6 +153,7 @@ FUNCTION refreshUI {
 	//	"stagingInProgress" as bool
 	//	"prestageHold" as bool
 	//	"poststageHold" as bool
+	//	"thisStageEndTime" as scalar
 
 	//	Print and acquire current time
 	LOCAL currentTime IS timePrint().
@@ -198,13 +200,13 @@ FUNCTION refreshUI {
 		SET stageSustainer TO vehicle[upfgStage]["isSustainer"].
 		SET currentVelocity TO SHIP:VELOCITY:ORBIT:MAG.
 		//	Time until the stage burns out (basing on ignition time and cumulative burn time - can be off by 1-2s)
-		IF stageEndTime > currentTime {
+		IF thisStageEndTime > currentTime {
 			//	No matter what state we're in, stagingInProgress or not (as long as it's active guidance),
-			//	stageEndTime is greater or equal to currentTime in all but one cases: when staging is indeed
+			//	thisStageEndTime is greater or equal to currentTime in all but one cases: when staging is indeed
 			//	in progress and the previous stage has already burnt out but the next one has not ignited yet.
-			//	In this situation stageEndTime has not been updated to the proper value yet, so the difference
+			//	In this situation thisStageEndTime has not been updated to the proper value yet, so the difference
 			//	does not make any sense.
-			SET stageTgo TO (stageEndTime - currentTime):SECONDS.
+			SET stageTgo TO (thisStageEndTime - currentTime):SECONDS.
 		} ELSE {
 			SET stageTgo TO 0.
 		}

@@ -23,7 +23,6 @@ SET CONFIG:IPU TO SETTINGS["kOS_IPU"].
 
 //	Initialize global flags and constants
 GLOBAL upfgStage IS -1.				//	System initializes at passive guidance
-GLOBAL stageEndTime IS TIME.		//	For Tgo calculation during active guidance (global time)
 GLOBAL eventPointer IS -1.			//	Index of the last executed event (-1 means none yet)
 GLOBAL throttleSetting IS 1.		//	This is what actually controls the throttle,
 GLOBAL throttleDisplay IS 1.		//	and this is what to display on the GUI - see throttleControl() for details.

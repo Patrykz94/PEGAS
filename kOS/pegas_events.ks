@@ -352,9 +352,11 @@ FUNCTION internalEvent_staging_activation {
 	//	This handles the "start" of a stage - be it an individual physical stage with an engine to be ignited,
 	//	or a sustainer type stage that's already on.
 	//	Expects global variables:
-	//	"vehicle" as list
-	//	"upfgStage" as scalar
 	//	"stagingInProgress" as boolean
+	//	"throttleSetting" as scalar
+	//	"throttleDisplay" as scalar
+	//	"upfgStage" as scalar
+	//	"vehicle" as list
 	DECLARE PARAMETER needsIgnite IS TRUE.	//	Expects a boolean
 	DECLARE PARAMETER printMessage IS TRUE.	//	Expects a boolean
 
@@ -368,7 +370,7 @@ FUNCTION internalEvent_staging_activation {
 		STAGE.
 	}
 	//	Technical stuff
-	updateStageEndTime().
+	updateThisStageEndTime().
 	SET stagingInProgress TO FALSE.
 	//	Print message if requested
 	IF printMessage {
