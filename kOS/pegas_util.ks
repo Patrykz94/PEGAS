@@ -1120,6 +1120,8 @@ FUNCTION angularMomentumWatchdog {
 	//	To safeguard against this, we will periodically check vehicle's specific orbital angular momentum
 	//	and compare against the expected value computed from target orbit parameters.
 	//	Expects global variables:
+	//	"prestageHold" as bool
+	//	"stagingInProgress" as bool
 	//	"target" as lexicon
 	//	Owns global variables: "amwd_target".
 	//	Returns TRUE if we should MECO, i.e. orbital angular momentum target is achieved, FALSE otherwise.
@@ -1131,11 +1133,16 @@ FUNCTION angularMomentumWatchdog {
 		LOCAL _target_sma IS (_target_ap + _target_pe) / 2.
 		LOCAL _target_ecc IS (_target_ap - _target_pe) / (_target_ap + _target_pe).
 		GLOBAL amwd_target IS SQRT(_target_sma * (1 - _target_ecc ^ 2)).
+		RETURN FALSE.
 	}
 
-	//	Don't check if we're between stages (angular momentum should not change during staging, but we will wait
-	//	just in case, to avoid messing up with the procedure).
-	IF stagingInProgress { RETURN. }
+	//	Don't check if we're between stages. Engines are still firing during pre-staging (when stagingInProgress
+	//	is already TRUE), so we should still make the check, but afterwards - i.e. during the actual staging -
+	//	the watchdog must be paused. Angular momentum *shouldn't* change at that time, but still might - for
+	//	example due to residual thrust. Still, the flight must not be terminated at this time due to the risk
+	//	of interrupting the staging sequence, with possibly devastating results (e.g. after ignition of the
+	//	ullage motors, which are possibly single-use).
+	IF stagingInProgress AND NOT prestageHold { RETURN FALSE. }
 
 	//	Compute the current angular momentum
 	LOCAL current_am IS SQRT(SHIP:ORBIT:SEMIMAJORAXIS * (1 - SHIP:ORBIT:ECCENTRICITY ^ 2)).
