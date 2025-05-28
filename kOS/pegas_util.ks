@@ -1064,6 +1064,18 @@ FUNCTION getActiveEngines {
 	RETURN activeEngines.
 }
 
+//	Conditions for transition into terminal hold mode
+FUNCTION terminalHoldConditions {
+	//	This encapsulates the logic behind transitioning into terminal guidance mode.
+	//	Expects global variables "stagingInProgress" and "upfgConverged" as bool.
+	DECLARE PARAMETER upfgInternal.	//  Expects a lexicon
+
+	RETURN
+		NOT stagingInProgress AND
+		upfgConverged AND
+		upfgInternal["tgo"] < SETTINGS["upfgFinalizationTime"].
+}
+
 //	Loss of thrust detection system
 FUNCTION thrustWatchdog {
 	//	Called regularly, will perform a check whether the engines that are supposed to be burning, are in fact

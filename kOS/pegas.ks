@@ -127,7 +127,7 @@ UNTIL ABORT {
 	//	Manage throttle, with the exception of initial portion of guided flight (where we're technically still flying the first stage).
 	IF activeGuidanceMode { throttleControl(). }
 	//	Transition to the attitude hold mode for the final seconds of the flight
-	IF upfgConverged AND upfgInternal["tgo"] < SETTINGS["upfgFinalizationTime"] { BREAK. }
+	IF terminalHoldConditions(upfgInternal) { BREAK. }
 	//	Thrust loss detection
 	thrustWatchdog().
 	//	Angular momentum criterion
