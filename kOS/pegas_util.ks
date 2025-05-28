@@ -516,6 +516,8 @@ FUNCTION setVehicle {
 		}
 		//	Add the shutdown flag - it is optional, but functions rely on its presence
 		IF NOT vst:HASKEY("shutdownRequired") { vst:ADD("shutdownRequired", FALSE). }
+		//	Same with the spoolup config - by default assume instant activation (legacy behavior)
+		IF NOT vst:HASKEY("spoolup") { vst:ADD("spoolup", 0.0). }
 		//	Calculate max burn time
 		LOCAL combinedEngines IS getThrust(vst["engines"]).
 		vst:ADD("maxT", vst["massFuel"] / combinedEngines[1]).
@@ -556,6 +558,7 @@ FUNCTION getStageDelays {
 	IF staging:HASKEY("ullageBurnDuration") {
 		SET totalDelays TO totalDelays + staging["ullageBurnDuration"].
 	}
+	SET totalDelays TO totalDelays + thisStage["spoolup"].
 
 	RETURN totalDelays.
 }
@@ -602,10 +605,12 @@ FUNCTION init4upfg_constantAcceleration {
 	SET gLimStage["massTotal"] TO gLimStage["massTotal"] - burnedFuelMass.
 	SET gLimStage["massFuel"] TO gLimStage["massFuel"] - burnedFuelMass.
 	SET gLimStage["maxT"] TO constAccBurnTime(gLimStage).
-	//	Insert it into the list
+	//	Set the other technical flags
+	SET gLimStage["spoolup"] TO 0.0.
 	SET gLimStage["isSustainer"] TO FALSE.
 	SET gLimStage["isVirtualStage"] TO TRUE.
 	SET gLimStage["virtualStageType"] TO "virtual (const-acc)".
+	//	Insert it into the list
 	vehicle:INSERT(stageID + 1, gLimStage).
 	//	Adjust the burn time of the current stage
 	SET vehicle[stageID]["maxT"] TO accLimTime.
@@ -639,6 +644,7 @@ FUNCTION init4upfg_jettison {
 		ELSE constAccBurnTime(afterStage).
 	//	CRUCIAL: this new stage is already ignited, so we must not try to start it again
 	SET afterStage["staging"] TO LEXICON("jettison", FALSE, "ignition", FALSE, "postStageEvent", FALSE).
+	SET afterStage["spoolup"] TO 0.0.
 	//	Mark the new stage as virtual and label it
 	SET afterStage["isSustainer"] TO FALSE.
 	SET afterStage["isVirtualStage"] TO TRUE.
@@ -699,6 +705,7 @@ FUNCTION init4upfg_shutdown {
 		ELSE constAccBurnTime(afterStage).
 	//	CRUCIAL: this new stage is already ignited, so we must not try to start it again
 	SET afterStage["staging"] TO LEXICON("jettison", FALSE, "ignition", FALSE, "postStageEvent", FALSE).
+	SET afterStage["spoolup"] TO 0.0.
 	//	Mark the new stage as a virtual one and label it
 	SET afterStage["isSustainer"] TO FALSE.
 	SET afterStage["isVirtualStage"] TO TRUE.

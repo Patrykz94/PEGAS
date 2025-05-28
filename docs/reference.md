@@ -79,7 +79,8 @@ massDry          | kg         | optional\* | `massTotal` - `massFuel`
 gLim             | G          | optional  | Acceleration limit to be imposed on this stage (requires throttling engines)
 minThrottle      | (0.0-1.0)  | optional\*\*| Minimum possible throttle of this stage's engines (for Realism Overhaul)
 throttle         | (0.0-1.0)  | optional  | Nominal throttle for this stage's engines (default = 1.0)
-shutdownRequired | `boolean`  | optional  | Do this stage's engines need explicit shutdown upon activation of the next stage?\*\*\*
+shutdownRequired | `boolean`  | optional  | Explicitly shut down this stage's engines before activation of the next stage\*\*\*, \*\*\*\*
+spoolup          | s          | optional  | How long does it take for this stage's engines to spool up to max thrust (default = 0.0)
 engines          | `list`     | required  | Parameters of each engine in the stage (details further)
 staging          | `lexicon`  | required  | Description of method of activation of this stage (details further)
 mode             | `int`      | reserved  | (Reserved for internal usage)
@@ -94,11 +95,16 @@ PEGAS creates those keys for its own purposes - read `initializeVehicleForUPFG` 
 
 \* - of the three fields, `massTotal`, `massFuel` and `massDry`, one can be skipped, but **two** have to be given.  
 \*\* - required if `gLim` is given.  
-\*\*\* - in normal usage this has no effect, since PEGAS schedules staging exactly in the moment the stage runs out of fuel.
-The purpose of this option was to enable controlling vehicles with a reusable booster,
-which can be configured to not burn all of its fuel (e.g. by having some of the fuel counted as its dry mass).
-PEGAS by default would not shut its engines, potentially causing a collision during separation.
-Setting this flag to `TRUE` overrides this behavior, causing PEGAS to shutdown the booster's engines before staging.
+\*\*\* - PEGAS attempts to schedule staging exactly in the moment the stage runs out of fuel, so normally this should have no effect
+(engines on each stage shut down by flaming out).
+However, a vehicle with a reusable booster can be configured to not burn all of its fuel during ascent
+(e.g. by having some of the fuel counted as its dry mass).
+Such a stage would not flame out on its own, potentially causing a collision during separation.
+In this case, you can set this flag to `TRUE` to make PEGAS forcibly shutdown the engines before staging.  
+\*\*\*\* - alternatively, you can use this flag to ensure a precise shutdown of a stage.
+This might come in handy when you observe weird behavior
+(i.e. a stage still burning even though the staging sequence has already started)
+but you're not sure what is the reason.
 
 #### Engines
 Key of type `LIST` containing `LEXICON`s.

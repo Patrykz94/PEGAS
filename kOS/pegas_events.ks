@@ -369,9 +369,13 @@ FUNCTION internalEvent_staging_activation {
 	IF needsIgnite {
 		STAGE.
 	}
-	//	Technical stuff
-	updateThisStageEndTime().
-	SET stagingInProgress TO FALSE.
+	//	If the engine requires a spool-up, wait the given time before disabling stagingInProgress
+	//	(by default, and for virtual stages, spoolup time is 0 and the trigger will fire immediately)
+	LOCAL engineSpooledUpTime IS TIME:SECONDS + vehicle[upfgStage]["spoolup"].
+	WHEN TIME:SECONDS >= engineSpooledUpTime THEN {
+		updateThisStageEndTime().
+		SET stagingInProgress TO FALSE.
+	}
 	//	Print message if requested
 	IF printMessage {
 		pushUIMessage(vehicle[upfgStage]["name"] + " - ignition").

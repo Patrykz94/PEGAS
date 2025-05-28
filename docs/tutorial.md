@@ -313,6 +313,7 @@ Now, for the second stage:
   * `waitBeforeIgnition` = 2 (a slight delay to let the booster separate neatly - matter of taste)
   * `ullage` = `"srb"` (because we have solid rockets for ullage)
   * `ullageBurnDuration` = 2 (let's say this time will suffice to settle the fuel so we can ignite the main engines safely)
+* `spoolup` = 1.6 (since we're playing Realism Overhaul and this is how long the RD-0146 takes to reach its full thrust)
 
 Pack those two lexicons into a list named `vehicle` and this part is done. Phew!
 
