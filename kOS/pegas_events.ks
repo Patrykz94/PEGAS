@@ -24,7 +24,6 @@ FUNCTION spawnCountdownEvents {
 	//	Generates print events for a standard countdown sequence.
 	//	Expects global variables:
 	//	"liftoffTime" as scalar
-	//	"sequence" as list
 
 	FUNCTION makeEvent {
 		DECLARE PARAMETER timeAfterLiftoff.	//	Expects a scalar
@@ -34,6 +33,7 @@ FUNCTION spawnCountdownEvents {
 			"time", timeAfterLiftoff,
 			"type", "print",
 			"message", message,
+			"msgPriority", PRIORITY_LOW,
 			"isHidden", TRUE
 		).
 	}
@@ -179,12 +179,13 @@ FUNCTION eventHandler {
 		internalEvent_staging().
 	}
 	ELSE {
-		pushUIMessage( "Unknown event type (" + eType + ", message='" + event["message"] + "')!", 5, PRIORITY_HIGH ).
+		pushUIMessage("Unknown event type (" + eType + ", message='" + event["message"] + "')!", 5, PRIORITY_HIGH).
 	}
 
 	//	Print event message, if requested
 	IF event:HASKEY("message") {
-		pushUIMessage( event["message"] ).
+		LOCAL priority IS CHOOSE event["msgPriority"] IF event:HASKEY("msgPriority") ELSE PRIORITY_NORMAL.
+		pushUIMessage(event["message"], 5, priority).
 	}
 
 	//	Mark the event as handled by incrementing the pointer
