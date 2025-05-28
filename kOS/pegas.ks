@@ -87,7 +87,7 @@ UNTIL ABORT {
 	//	The passive guidance loop ends a few seconds before actual ignition of the first UPFG-controlled stage.
 	//	This is to give UPFG time to converge. Actual ignition occurs via stagingEvents.
 	IF TIME:SECONDS >= liftoffTime:SECONDS + controls["upfgActivation"] - SETTINGS["upfgConvergenceDelay"] {
-		pushUIMessage( "Initiating UPFG!" ).
+		pushUIMessage("Initiating UPFG!").
 		BREAK.
 	}
 	//	Thrust loss detection
@@ -139,7 +139,7 @@ UNTIL ABORT {
 	refreshUI().
 	//	User hooks
 	callHooks("activePost").
-	WAIT 0.
+	//  No need to WAIT here - this loop is heavy enough: https://ksp-kos.github.io/KOS_DOC/general/cpu_hardware.html#wait
 }
 //	Final orbital insertion loop
 pushUIMessage( "Holding attitude for burn finalization!" ).
@@ -152,7 +152,10 @@ UNTIL ABORT {
 	//	We can't do "tgo < 0" as then we still didn't break if the previous loop tgo was 0.01 or so.
 	IF upfgInternal["tgo"] < finalizeDT { BREAK. }
 	//	Apply the angular momentum criterion as well
-	IF angularMomentumWatchdog() { BREAK. }
+	IF angularMomentumWatchdog() {
+		pushUIMessage("Angular momentum criterion satisfied!", 5, PRIORITY_CRITICAL).
+		BREAK.
+	}
 	refreshUI().
 	WAIT 0.
 }

@@ -68,6 +68,8 @@ FUNCTION spawnStagingEvents {
 	//	"controls" as lexicon
 	//	"vehicle" as list
 	//	"SETTINGS" as lexicon
+
+	//	"stageActivationTime" keeps track of the "current" time in the iteration over the vehicle, starting from "now".
 	LOCAL stageActivationTime IS controls["upfgActivation"].
 	LOCAL vehicleIterator IS vehicle:ITERATOR.
 	//	The first active stage is already pre-staged so we only need to create the staging event
@@ -87,7 +89,8 @@ FUNCTION spawnStagingEvents {
 		"isHidden", FALSE
 	).
 	insertEvent(stagingEvent).
-	//	Compute burnout time for this stage and add to sAT (this involves activation time and burn time)
+	//	Compute activation time for the next stage - this is equal to the burnout time for the current stage, which begins its burn
+	//	with some delay after the activation, and burns for maxT seconds.
 	SET stageActivationTime TO stageActivationTime + getStageDelays(vehicleIterator:VALUE) + vehicleIterator:VALUE["maxT"].
 	//	Loop over remaining stages
 	UNTIL NOT vehicleIterator:NEXT {
@@ -113,7 +116,7 @@ FUNCTION spawnStagingEvents {
 			SET stagingEvent["fpMessage"] TO "Constant acceleration mode".
 		}
 		insertEvent(stagingEvent).
-		//	Compute next stage time
+		//	Compute activation time for the next stage (in the same way as before)
 		SET stageActivationTime TO stageActivationTime + getStageDelays(vehicleIterator:VALUE) + vehicleIterator:VALUE["maxT"].
 	}
 }
@@ -438,7 +441,7 @@ FUNCTION userEvent_delegate {
 
 	LOCAL fun IS event["function"].
 	IF fun:ISDEAD() {
-		pushUIMessage("DEAD DELEGATE - UNABLE TO CALL!", 10, PRIORITY_CRITICAL).
+		pushUIMessage("DEAD DELEGATE - UNABLE TO CALL!", 10, PRIORITY_HIGH).
 	} ELSE {
 		fun:CALL().
 	}
